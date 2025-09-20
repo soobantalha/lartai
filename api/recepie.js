@@ -22,71 +22,14 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Message is required' });
     }
 
-    // Call xAI Grok API
-    const grokResponse = await fetch('https://api.x.ai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.XAI_API_KEY}`
-      },
-      body: JSON.stringify({
-        model: 'grok-4-fast',
-        messages: [
-          {
-            role: 'system',
-            content: `You are a Michelin-star French chef specializing in haute cuisine. 
-            Create elegant, sophisticated French recipes with precise measurements and techniques.
-            Always respond with a JSON object in this exact format:
-            {
-              "name": "Recipe name",
-              "cuisine": "French",
-              "ingredients": ["ingredient 1", "ingredient 2", ...],
-              "instructions": ["step 1", "step 2", ...],
-              "tips": ["tip 1", "tip 2", ...],
-              "score": 85-100
-            }
-            Make the recipe luxurious and visually stunning.`
-          },
-          {
-            role: 'user',
-            content: message
-          }
-        ],
-        temperature: 0.7,
-        max_tokens: 2000
-      })
-    });
-
-    if (!grokResponse.ok) {
-      throw new Error(`xAI API error: ${grokResponse.statusText}`);
-    }
-
-    const data = await grokResponse.json();
-    const recipeText = data.choices[0].message.content;
+    // For demonstration, we'll use a simulated response
+    // In production, you would call the xAI API here
+    await new Promise(resolve => setTimeout(resolve, 1500));
     
-    // Try to parse the JSON response from the model
-    try {
-      const recipe = JSON.parse(recipeText);
-      return res.status(200).json({ recipe });
-    } catch (parseError) {
-      // If parsing fails, try to extract JSON from the text
-      const jsonMatch = recipeText.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        try {
-          const recipe = JSON.parse(jsonMatch[0]);
-          return res.status(200).json({ recipe });
-        } catch (e) {
-          // If all parsing fails, use a fallback recipe
-          return res.status(200).json({ 
-            recipe: getFallbackRecipe(message) 
-          });
-        }
-      } else {
-        return res.status(200).json({ 
-          recipe: getFallbackRecipe(message) 
-        });
-      }
-    }
+    // Return a sample recipe (replace with actual API call)
+    const recipe = getFallbackRecipe(message);
+    return res.status(200).json({ recipe });
+    
   } catch (error) {
     console.error('Error:', error);
     return res.status(500).json({ 
@@ -156,8 +99,52 @@ function getFallbackRecipe(input) {
         "Use a very sharp knife dipped in hot water for clean slices"
       ],
       score: 96
+    },
+    {
+      name: "Bouillabaisse Marseillaise",
+      cuisine: "French",
+      ingredients: [
+        "500g mixed firm fish (monkfish, sea bass, halibut)",
+        "500g shellfish (mussels, clams, shrimp)",
+        "1 fennel bulb, thinly sliced",
+        "1 onion, diced",
+        "4 cloves garlic, minced",
+        "1 orange, zest only",
+        "1 pinch saffron threads",
+        "800g canned tomatoes",
+        "1L fish stock",
+        "1/4 cup pastis or ouzo",
+        "Bouquet garni (thyme, bay leaf, parsley stems)",
+        "Rouille sauce for serving",
+        "Toasted baguette slices"
+      ],
+      instructions: [
+        "Soak saffron in 2 tbsp warm water. Set aside.",
+        "In large pot, sauté fennel and onion until softened. Add garlic and cook until fragrant.",
+        "Add pastis and flame to burn off alcohol. Add tomatoes, fish stock, bouquet garni, and saffron with its water.",
+        "Simmer for 20 minutes to develop flavors. Season with salt and pepper.",
+        "Add firm fish and cook for 5 minutes. Add shellfish and cook until shells open.",
+        "Discard any unopened shells. Stir in orange zest.",
+        "Serve in bowls with rouille spread on baguette slices."
+      ],
+      tips: [
+        "Use the freshest possible seafood for best results",
+        "Traditional rouille includes saffron, garlic, and chili pepper",
+        "Serve with a crisp white wine from Provence"
+      ],
+      score: 94
     }
   ];
   
-  return fallbackRecipes[Math.floor(Math.random() * fallbackRecipes.length)];
+  // Select recipe based on input keywords
+  const inputLower = input.toLowerCase();
+  if (inputLower.includes('chicken') || inputLower.includes('poultry')) {
+    return fallbackRecipes[0];
+  } else if (inputLower.includes('foie gras') || inputLower.includes('terrine')) {
+    return fallbackRecipes[1];
+  } else if (inputLower.includes('fish') || inputLower.includes('seafood')) {
+    return fallbackRecipes[2];
+  } else {
+    return fallbackRecipes[Math.floor(Math.random() * fallbackRecipes.length)];
+  }
 }

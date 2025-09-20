@@ -1,0 +1,10 @@
+{
+  "name": "sooban-talha-lart-ai",
+  "version": "1.0.0",
+  "description": "Ultra luxury French cuisine AI recipe generator",
+  "scripts": {
+    "dev": "vercel dev"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}
